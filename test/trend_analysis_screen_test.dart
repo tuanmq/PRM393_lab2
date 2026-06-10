@@ -67,6 +67,16 @@ void main() {
 
     expect(find.text('Top Influential Papers'), findsOneWidget);
     expect(find.text('View Full Ranking'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Top Journals & Authors'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Top Journals & Authors'), findsWidgets);
+    expect(find.text('View Top Journals & Authors'), findsOneWidget);
   });
 
   testWidgets('tapping full ranking opens top influential papers screen', (
@@ -117,5 +127,57 @@ void main() {
     expect(find.text('Top Influential Papers'), findsOneWidget);
     expect(find.text('AI 2'), findsOneWidget);
     expect(find.text('AI 1'), findsOneWidget);
+  });
+
+  testWidgets('tapping contributors button opens top journals/authors screen', (
+    WidgetTester tester,
+  ) async {
+    const publications = [
+      Publication(
+        id: 'W1',
+        title: 'AI 1',
+        publicationYear: 2021,
+        citationCount: 20,
+        journalName: 'Journal A',
+        authorNames: ['Alice', 'Bob'],
+        doi: null,
+        abstractText: null,
+      ),
+      Publication(
+        id: 'W2',
+        title: 'AI 2',
+        publicationYear: 2022,
+        citationCount: 30,
+        journalName: 'Journal A',
+        authorNames: ['Alice'],
+        doi: null,
+        abstractText: null,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: TrendAnalysisScreen(
+          topic: 'Artificial Intelligence',
+          publications: publications,
+        ),
+      ),
+    );
+
+    await tester.scrollUntilVisible(
+      find.text('View Top Journals & Authors'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('View Top Journals & Authors'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Top Journals & Authors'), findsWidgets);
+    expect(find.text('Top Journals'), findsOneWidget);
+    expect(find.text('Top Authors'), findsOneWidget);
+    expect(find.text('1. Journal A (2 papers)'), findsOneWidget);
+    expect(find.text('1. Alice (2 papers)'), findsOneWidget);
   });
 }

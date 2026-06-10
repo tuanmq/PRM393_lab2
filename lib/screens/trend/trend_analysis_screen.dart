@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../models/publication.dart';
+import '../../state/contributors_analyzer.dart';
 import '../../state/influential_analyzer.dart';
 import '../../state/trend_analyzer.dart';
 import '../../widgets/trend_chart.dart';
+import '../contributors/top_contributors_screen.dart';
 import '../influential/top_influential_papers_screen.dart';
 
 class TrendAnalysisScreen extends StatelessWidget {
@@ -28,11 +30,33 @@ class TrendAnalysisScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _openContributors(
+    BuildContext context,
+    ContributorsResult contributors,
+  ) {
+    return Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => TopContributorsScreen(
+          topic: topic,
+          journals: contributors.topJournals,
+          authors: contributors.topAuthors,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final analysis = TrendAnalyzer.analyze(publications);
     final topInfluential = InfluentialAnalyzer.topPapers(publications);
     final previewPapers = topInfluential.take(3).toList(growable: false);
+    final contributors = ContributorsAnalyzer.analyze(publications);
+    final previewJournals = contributors.topJournals
+        .take(3)
+        .toList(growable: false);
+    final previewAuthors = contributors.topAuthors
+        .take(3)
+        .toList(growable: false);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Trend Analysis')),
@@ -137,9 +161,108 @@ class TrendAnalysisScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Top Journals & Authors',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Most active publication venues and contributing researchers for this topic.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _PreviewList(
+                    title: 'Journals',
+                    lines: previewJournals
+                        .map(
+                          (item) => '${item.name} (${item.publicationCount})',
+                        )
+                        .toList(growable: false),
+                    emptyLabel: 'No journal ranking yet.',
+                  ),
+                  const SizedBox(height: 8),
+                  _PreviewList(
+                    title: 'Authors',
+                    lines: previewAuthors
+                        .map(
+                          (item) => '${item.name} (${item.publicationCount})',
+                        )
+                        .toList(growable: false),
+                    emptyLabel: 'No author ranking yet.',
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed:
+                          (contributors.topJournals.isEmpty &&
+                              contributors.topAuthors.isEmpty)
+                          ? null
+                          : () => _openContributors(context, contributors),
+                      icon: const Icon(Icons.groups_2_outlined),
+                      label: const Text('View Top Journals & Authors'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PreviewList extends StatelessWidget {
+  const _PreviewList({
+    required this.title,
+    required this.lines,
+    required this.emptyLabel,
+  });
+
+  final String title;
+  final List<String> lines;
+  final String emptyLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(color: const Color(0xFF475569)),
+        ),
+        const SizedBox(height: 6),
+        if (lines.isEmpty)
+          Text(emptyLabel, style: Theme.of(context).textTheme.bodyMedium)
+        else
+          ...lines.asMap().entries.map((entry) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                '${entry.key + 1}. ${entry.value}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            );
+          }),
+      ],
     );
   }
 }

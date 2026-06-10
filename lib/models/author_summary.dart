@@ -1,0 +1,6 @@
+class AuthorSummary {
+  const AuthorSummary({required this.name, required this.publicationCount});
+
+  final String name;
+  final int publicationCount;
+}
