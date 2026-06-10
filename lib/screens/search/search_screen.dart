@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/publication.dart';
+import '../dashboard/research_dashboard_screen.dart';
 import '../detail/publication_detail_screen.dart';
 import '../trend/trend_analysis_screen.dart';
 import '../../state/search_provider.dart';
@@ -54,6 +55,17 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  Future<void> _openDashboard(BuildContext context, SearchProvider provider) {
+    return Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ResearchDashboardScreen(
+          topic: provider.currentTopic,
+          publications: provider.publications,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,13 +92,27 @@ class _SearchScreenState extends State<SearchScreen> {
                   _SearchSummary(provider: provider),
                   if (provider.publications.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () => _openTrendAnalysis(context, provider),
-                        icon: const Icon(Icons.bar_chart_rounded),
-                        label: const Text('View Trend Analysis'),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                _openTrendAnalysis(context, provider),
+                            icon: const Icon(Icons.bar_chart_rounded),
+                            label: const Text('Trend'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: () => _openDashboard(context, provider),
+                            icon: const Icon(
+                              Icons.dashboard_customize_outlined,
+                            ),
+                            label: const Text('Dashboard'),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                   const SizedBox(height: 16),

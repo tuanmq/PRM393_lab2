@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:journal_trend_analyzer/app.dart';
 import 'package:journal_trend_analyzer/models/publication.dart';
+import 'package:journal_trend_analyzer/screens/dashboard/research_dashboard_screen.dart';
 import 'package:journal_trend_analyzer/screens/search/search_screen.dart';
 import 'package:journal_trend_analyzer/services/openalex_service.dart';
 import 'package:journal_trend_analyzer/services/publication_repository.dart';
@@ -46,6 +47,30 @@ void main() {
     expect(find.text('Publication Details'), findsOneWidget);
     expect(find.text('Journal of Smart Systems'), findsOneWidget);
     expect(find.text('10.1000/xyz123'), findsOneWidget);
+  });
+
+  testWidgets('dashboard button on search opens research dashboard', (
+    WidgetTester tester,
+  ) async {
+    final provider = SearchProvider(repository: _FakePublicationRepository());
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<SearchProvider>.value(
+        value: provider,
+        child: const MaterialApp(home: SearchScreen()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), 'Artificial Intelligence');
+    await tester.tap(find.text('Search OpenAlex'));
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.text('Dashboard'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ResearchDashboardScreen), findsOneWidget);
+    expect(find.text('Research Dashboard'), findsOneWidget);
   });
 }
 

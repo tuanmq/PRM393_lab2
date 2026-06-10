@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../models/publication.dart';
 import '../../state/contributors_analyzer.dart';
+import '../../state/dashboard_analyzer.dart';
 import '../../state/influential_analyzer.dart';
 import '../../state/trend_analyzer.dart';
 import '../../widgets/trend_chart.dart';
 import '../contributors/top_contributors_screen.dart';
+import '../dashboard/research_dashboard_screen.dart';
 import '../influential/top_influential_papers_screen.dart';
 
 class TrendAnalysisScreen extends StatelessWidget {
@@ -45,12 +47,22 @@ class TrendAnalysisScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _openDashboard(BuildContext context) {
+    return Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            ResearchDashboardScreen(topic: topic, publications: publications),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final analysis = TrendAnalyzer.analyze(publications);
     final topInfluential = InfluentialAnalyzer.topPapers(publications);
     final previewPapers = topInfluential.take(3).toList(growable: false);
     final contributors = ContributorsAnalyzer.analyze(publications);
+    final dashboard = DashboardAnalyzer.analyze(publications);
     final previewJournals = contributors.topJournals
         .take(3)
         .toList(growable: false);
@@ -83,6 +95,15 @@ class TrendAnalysisScreen extends StatelessWidget {
                   value: analysis.yearRangeLabel,
                 ),
               ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _openDashboard(context),
+                icon: const Icon(Icons.dashboard_customize_outlined),
+                label: const Text('Open Research Dashboard'),
+              ),
             ),
             const SizedBox(height: 20),
             Container(
@@ -157,6 +178,42 @@ class TrendAnalysisScreen extends StatelessWidget {
                       icon: const Icon(Icons.leaderboard_outlined),
                       label: const Text('View Full Ranking'),
                     ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Dashboard Preview',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Top journal: ${dashboard.topJournal ?? 'N/A'}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Top author: ${dashboard.topAuthor ?? 'N/A'}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Most influential: ${dashboard.mostInfluentialPaper?.title ?? 'N/A'}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),

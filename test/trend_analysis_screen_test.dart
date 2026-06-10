@@ -180,4 +180,47 @@ void main() {
     expect(find.text('1. Journal A (2 papers)'), findsOneWidget);
     expect(find.text('1. Alice (2 papers)'), findsOneWidget);
   });
+
+  testWidgets('tapping dashboard button opens research dashboard screen', (
+    WidgetTester tester,
+  ) async {
+    const publications = [
+      Publication(
+        id: 'W1',
+        title: 'AI 1',
+        publicationYear: 2021,
+        citationCount: 20,
+        journalName: 'Journal A',
+        authorNames: ['Alice', 'Bob'],
+        doi: null,
+        abstractText: null,
+      ),
+      Publication(
+        id: 'W2',
+        title: 'AI 2',
+        publicationYear: 2022,
+        citationCount: 30,
+        journalName: 'Journal A',
+        authorNames: ['Alice'],
+        doi: null,
+        abstractText: null,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: TrendAnalysisScreen(
+          topic: 'Artificial Intelligence',
+          publications: publications,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open Research Dashboard'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Research Dashboard'), findsOneWidget);
+    expect(find.text('Top Journal'), findsOneWidget);
+    expect(find.text('Top Author'), findsOneWidget);
+  });
 }
